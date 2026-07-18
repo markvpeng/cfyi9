@@ -1,0 +1,29 @@
+on:
+  workflow_dispatch:
+ 
+jobs:
+  join-k3s:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Test
+        env:
+          K3S_URL: https://raspberrypi:6443
+          K3S_TOKEN: ${{ secrets.K3S_TOKEN }}
+        run: |
+          curl -kv https://raspberrypi:6443 
+      - name: Join k3s cluster
+        env:
+          K3S_URL: https://raspberrypi:6443
+          K3S_TOKEN: ${{ secrets.K3S_TOKEN }}
+        run: |
+          curl -sfL https://get.k3s.io | K3S_URL="$K3S_URL" K3S_TOKEN="$K3S_TOKEN" sh -
+ 
+      - name: Sleep for 30 minutes
+        run: sleep 1800
